@@ -4,8 +4,8 @@
   "description": "Bloco de notas",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#b2c9c3",
-  "theme_color": "#b2c9c3",
+  "background_color": "#8fb3ae",
+  "theme_color": "#8fb3ae",
   "orientation": "portrait",
   "icons": [
     {
