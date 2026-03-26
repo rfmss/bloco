@@ -3,9 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<!-- iOS: fullscreen sem barra do Safari quando adicionado à tela inicial -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="bloco">
+<!-- Android Chrome: esconde UI do browser -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#b2c9c3">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon.png">
 <title>bloco</title>
@@ -19,13 +23,20 @@
 html, body {
   height: 100%;
   background: #b2c9c3;
-  color: #0d0d0d;
+  color: #2a2a2a;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 17px;
   line-height: 1.6;
   -webkit-text-size-adjust: 100%;
   overflow-x: hidden;
 }
+
+/* ── Standalone mode: compensate for translucent status bar ── */
+@media all and (display-mode: standalone) {
+  .header { padding-top: 40px; }
+}
+/* iOS Safari added-to-homescreen: navigator.standalone = true */
+body.standalone .header { padding-top: 40px; }
 
 /* ── Header ── */
 .header {
@@ -73,7 +84,7 @@ html, body {
   background: rgba(0,0,0,0.12);
   border-radius: 20px;
   padding: 4px 10px;
-  color: #0d0d0d;
+  color: #2a2a2a;
 }
 .kb-badge.on { display: inline-block; }
 
@@ -86,12 +97,12 @@ html, body {
   border: none;
   border-radius: 20px;
   padding: 6px 12px;
-  color: #0d0d0d;
+  color: #2a2a2a;
   cursor: pointer;
 }
 .hbtn:active { opacity: 0.7; }
 .hbtn.dark {
-  background: #0d0d0d;
+  background: #2a2a2a;
   color: #f0ece4;
 }
 
@@ -137,7 +148,7 @@ html, body {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 14px;
   font-weight: 700;
-  color: #0d0d0d;
+  color: #2a2a2a;
   margin-bottom: 5px;
   white-space: nowrap;
   overflow: hidden;
@@ -182,7 +193,7 @@ html, body {
   bottom: 28px; right: 18px;
   width: 54px; height: 54px;
   border-radius: 50%;
-  background: #0d0d0d;
+  background: #2a2a2a;
   color: #fff;
   border: none;
   font-size: 28px;
@@ -231,12 +242,12 @@ html, body {
   border-radius: 8px;
   padding: 7px 13px;
   cursor: pointer;
-  color: #0d0d0d;
+  color: #2a2a2a;
 }
 .ebtn:active { opacity: 0.6; }
 .ebtn.del { color: #c0392b; border-color: rgba(192,57,43,0.28); display: none; }
 .ebtn.del.on { display: block; }
-.ebtn.save { background: #0d0d0d; color: #fff; border-color: #0d0d0d; }
+.ebtn.save { background: #2a2a2a; color: #fff; border-color: #2a2a2a; }
 
 .editor-bar-right {
   display: -webkit-flex; display: flex;
@@ -259,7 +270,7 @@ html, body {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 22px;
   font-weight: 700;
-  color: #0d0d0d;
+  color: #2a2a2a;
   border: none; outline: none;
   background: transparent;
   padding: 16px 18px 8px;
@@ -274,7 +285,7 @@ html, body {
 .editor-body {
   font-family: 'Courier New', Courier, monospace;
   font-size: 15px;
-  color: #0d0d0d;
+  color: #2a2a2a;
   border: none; outline: none;
   background: transparent;
   padding: 8px 18px 40px;
@@ -295,7 +306,7 @@ html, body {
   bottom: 90px; left: 50%;
   -webkit-transform: translateX(-50%) translateY(18px);
   transform: translateX(-50%) translateY(18px);
-  background: #0d0d0d;
+  background: #2a2a2a;
   color: #fff;
   font-family: 'Courier New', Courier, monospace;
   font-size: 11px;
@@ -353,9 +364,9 @@ html, body {
   border: none;
 }
 .sbtn:active { opacity: 0.75; }
-.sbtn.primary { background: #0d0d0d; color: #fff; }
+.sbtn.primary { background: #2a2a2a; color: #fff; }
 .sbtn.danger   { background: #c0392b; color: #fff; }
-.sbtn.ghost    { background: none; border: 1px solid rgba(0,0,0,0.14); color: #0d0d0d; }
+.sbtn.ghost    { background: none; border: 1px solid rgba(0,0,0,0.14); color: #2a2a2a; }
 
 /* ── Upload label (acts as button + file input wrapper) ── */
 .upload-label {
@@ -394,7 +405,7 @@ html, body {
     </div>
     <div class="header-actions">
       <div class="kb-badge" id="kb-badge">⌨ físico</div>
-      <button class="hbtn dark" onclick="openSnapshot()">⊛ snapshot</button>
+      <button class="hbtn dark" onclick="openSnapshot()">salvar tudo</button>
     </div>
   </div>
   <div class="bento" id="bento"></div>
@@ -434,28 +445,35 @@ html, body {
 <!-- SNAPSHOT SHEET -->
 <div class="overlay" id="snap-overlay" onclick="closeSnapshot()">
   <div class="sheet" onclick="stopProp(event)">
-    <div class="sheet-title">Snapshot</div>
-    <div class="sheet-sub" id="snap-sub">fotografia completa do bloco</div>
+    <div class="sheet-title">Guardar tudo</div>
+    <div class="sheet-sub" id="snap-sub">salva um arquivo com todas as suas notas</div>
 
     <!-- view: main actions -->
     <div id="snap-main">
       <div class="sheet-btns">
-        <button class="sbtn primary" onclick="doDownload()">↓ baixar arquivo</button>
-        <button class="sbtn ghost"   onclick="showUpload()">↑ restaurar de arquivo</button>
-        <button class="sbtn ghost"   onclick="closeSnapshot()">Cancelar</button>
+        <button class="sbtn primary" onclick="doDownload()">↓ guardar tudo agora</button>
+        <button class="sbtn ghost"   onclick="showUpload()">↑ abrir backup salvo</button>
+        <button class="sbtn ghost"   onclick="closeSnapshot()">Fechar</button>
       </div>
     </div>
 
     <!-- view: upload / restore -->
     <div id="snap-upload" style="display:none">
+      <!-- iOS copy hint (shown when download triggered on iOS < 13) -->
+      <div id="ios-copy-hint" style="display:none;font-family:'Courier New',monospace;font-size:11px;color:#666;letter-spacing:.06em;margin-bottom:10px;line-height:1.5;">
+        iOS não baixa arquivos diretamente.<br>
+        Selecione tudo abaixo e copie para salvar.
+      </div>
+      <button id="ios-copy-btn" class="sbtn primary" style="display:none;margin-bottom:10px;" onclick="copyJSON()">Copiar tudo</button>
+
       <!-- real file input, visible and tappable -->
-      <label class="sbtn primary upload-label" id="upload-label">
+      <label class="sbtn ghost upload-label" id="upload-label">
         Escolher arquivo .json
         <input type="file" id="restore-file" accept=".json,.txt,.md"
           style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer"
           onchange="readFile(event)">
       </label>
-      <!-- paste fallback for iOS 9 where file picker only opens camera/photos -->
+      <!-- paste fallback -->
       <div style="margin:12px 0 6px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888;">
         ou cole o JSON abaixo
       </div>
@@ -729,26 +747,33 @@ function showUpload() {
   document.getElementById('snap-upload').style.display = 'block';
 }
 
+// ── Detect if browser supports real file download ────────
+// iOS Safari < 13 ignores the download attribute entirely
+var IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+var IOS_VER = (function() {
+  var m = navigator.userAgent.match(/OS (\d+)_/);
+  return m ? parseInt(m[1], 10) : 0;
+})();
+var CAN_DOWNLOAD = !IS_IOS || IOS_VER >= 13;
+
 // ── DOWNLOAD ─────────────────────────────────────────────
 function doDownload() {
   var json  = buildSnapshot();
   var fname = snapFilename();
 
-  // 1. Try Blob + <a download> (Chrome, Firefox, Android, Edge)
-  if (window.Blob && (window.URL || window.webkitURL)) {
+  // Modern browsers + Android + iOS 13+: real file download
+  if (CAN_DOWNLOAD && window.Blob && (window.URL || window.webkitURL)) {
     try {
       var blob = new Blob([json], { type: 'application/json' });
       var url  = (window.URL || window.webkitURL).createObjectURL(blob);
       var a    = document.createElement('a');
-      a.href     = url;
-      a.download = fname;
-      a.style.display = 'none';
+      a.href = url; a.download = fname; a.style.display = 'none';
       document.body.appendChild(a);
       a.click();
-      var _url = url;
+      var _u = url;
       setTimeout(function() {
         document.body.removeChild(a);
-        (window.URL || window.webkitURL).revokeObjectURL(_url);
+        (window.URL || window.webkitURL).revokeObjectURL(_u);
       }, 800);
       closeSnapshot();
       toast('⬇ ' + fname);
@@ -756,19 +781,45 @@ function doDownload() {
     } catch(e) {}
   }
 
-  // 2. iOS Safari fallback: data URI in new tab
-  //    User vê o JSON → toca Compartilhar → Salvar em Arquivos
+  // iOS < 13: download attribute ignored — show JSON for copy
+  // Best the user can do: copy → paste no Notes/Mail/etc.
+  showIOSCopy(json, fname);
+}
+
+function showIOSCopy(json, fname) {
+  // Reuse the upload view but fill with JSON for copying
+  document.getElementById('snap-main').style.display   = 'none';
+  document.getElementById('snap-upload').style.display = 'block';
+  // Update label to indicate copy mode
+  document.getElementById('upload-label').style.display = 'none';
+  var ta = document.getElementById('restore-ta');
+  ta.value = json;
+  ta.setAttribute('readonly', 'readonly');
+  // Show copy button if not already
+  document.getElementById('ios-copy-hint').style.display = 'block';
+  document.getElementById('ios-copy-btn').style.display  = 'block';
+  toast('Selecione tudo e copie o JSON');
+  setTimeout(function() { ta.select(); }, 200);
+}
+
+function copyJSON() {
+  var ta = document.getElementById('restore-ta');
+  ta.select();
   try {
-    var dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-    window.open(dataUri, '_blank');
-    closeSnapshot();
-    toast('Aberto no Safari — compartilhe para salvar');
-  } catch(e2) {
-    // 3. Last resort: paste area
-    showUpload();
-    document.getElementById('restore-ta').value = json;
-    toast('Copie o JSON abaixo');
+    document.execCommand('copy');
+    toast('Copiado! Cole no Notes ou envie por email.');
+  } catch(e) {
+    toast('Selecione tudo manualmente e copie');
   }
+}
+
+function showRestoreMode() {
+  var ta = document.getElementById('restore-ta');
+  ta.removeAttribute('readonly');
+  ta.value = '';
+  document.getElementById('upload-label').style.display = '';
+  document.getElementById('ios-copy-hint').style.display = 'none';
+  document.getElementById('ios-copy-btn').style.display  = 'none';
 }
 
 // ── UPLOAD / RESTORE ──────────────────────────────────────
@@ -906,9 +957,17 @@ function esc(s) {
 function stopProp(e) { e.stopPropagation(); }
 
 // ══════════════════════════════════════════════════════════
+// STANDALONE (added to homescreen — hide browser chrome)
+// ══════════════════════════════════════════════════════════
+if (window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches) {
+  document.body.className = (document.body.className + ' standalone').trim();
+}
+
+// ══════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════
-if (!LS) toast('Modo privado — use snapshot para guardar');
+if (!LS) toast('Modo privado — use "salvar tudo" para guardar');
 renderList();
 </script>
 </body>
