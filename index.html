@@ -11,7 +11,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#b2c9c3">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon.png">
+<!-- iOS: apple-touch-icon-precomposed prevents Safari from adding gloss -->
+<link rel="apple-touch-icon-precomposed" sizes="180x180" href="icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
 <title>bloco</title>
 <style>
 *, *:before, *:after {
@@ -98,6 +100,8 @@ body.standalone .header { padding-top: 40px; }
   border-radius: 20px;
   padding: 6px 12px;
   color: #2a2a2a;
+  display: -webkit-inline-flex; display: inline-flex;
+  -webkit-align-items: center; align-items: center;
   cursor: pointer;
 }
 .hbtn:active { opacity: 0.7; }
@@ -106,7 +110,7 @@ body.standalone .header { padding-top: 40px; }
   color: #f0ece4;
 }
 
-/* ── Bento — row-based ── */
+/* ── Bento — row-based, equal squares ── */
 .bento {
   padding: 4px 14px 130px;
 }
@@ -115,11 +119,11 @@ body.standalone .header { padding-top: 40px; }
   display: flex;
   -webkit-flex-direction: row;
   flex-direction: row;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-.bento-row > * + * { margin-left: 8px; }
+.bento-row > * + * { margin-left: 10px; }
 
-/* Card base */
+/* Card base — uniform moleskine-style squares */
 .note-card {
   -webkit-flex: 1;
   flex: 1;
@@ -129,19 +133,16 @@ body.standalone .header { padding-top: 40px; }
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   overflow: hidden;
-  min-height: 90px;
+  height: 140px;
   -webkit-transition: -webkit-transform 0.14s;
   transition: transform 0.14s;
   position: relative;
+  display: -webkit-flex; display: flex;
+  -webkit-flex-direction: column; flex-direction: column;
 }
 .note-card:active {
   -webkit-transform: scale(0.97);
   transform: scale(0.97);
-}
-
-/* Wide card: full row, taller */
-.note-card.wide {
-  min-height: 110px;
 }
 
 .note-card-title {
@@ -164,6 +165,9 @@ body.standalone .header { padding-top: 40px; }
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+.note-card-preview {
+  -webkit-flex: 1; flex: 1;
+}
 .note-card-date {
   font-family: 'Courier New', Courier, monospace;
   font-size: 9px;
@@ -171,6 +175,7 @@ body.standalone .header { padding-top: 40px; }
   text-transform: uppercase;
   color: #bbb;
   margin-top: 8px;
+  -webkit-flex-shrink: 0; flex-shrink: 0;
 }
 
 /* ── Empty ── */
@@ -191,17 +196,17 @@ body.standalone .header { padding-top: 40px; }
 .fab {
   position: fixed;
   bottom: 28px; right: 18px;
-  width: 54px; height: 54px;
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: #2a2a2a;
   color: #fff;
   border: none;
-  font-size: 28px;
-  line-height: 54px;
-  text-align: center;
   cursor: pointer;
   box-shadow: 0 4px 18px rgba(0,0,0,0.28);
   z-index: 50;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
   -webkit-transition: -webkit-transform 0.12s;
   transition: transform 0.12s;
 }
@@ -243,6 +248,8 @@ body.standalone .header { padding-top: 40px; }
   padding: 7px 13px;
   cursor: pointer;
   color: #2a2a2a;
+  display: -webkit-inline-flex; display: inline-flex;
+  -webkit-align-items: center; align-items: center;
 }
 .ebtn:active { opacity: 0.6; }
 .ebtn.del { color: #c0392b; border-color: rgba(192,57,43,0.28); display: none; }
@@ -362,7 +369,14 @@ body.standalone .header { padding-top: 40px; }
   font-size: 12px; letter-spacing: 0.12em;
   text-transform: uppercase; cursor: pointer;
   border: none;
+  display: -webkit-flex; display: flex;
+  -webkit-align-items: center; align-items: center;
+  -webkit-justify-content: center; justify-content: center;
 }
+/* Icon spacing inside all buttons */
+.hbtn svg, .ebtn svg, .sbtn svg { margin-right: 6px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+/* upload label acts like sbtn */
+.upload-label svg { margin-right: 6px; }
 .sbtn:active { opacity: 0.75; }
 .sbtn.primary { background: #2a2a2a; color: #fff; }
 .sbtn.danger   { background: #c0392b; color: #fff; }
@@ -405,21 +419,21 @@ body.standalone .header { padding-top: 40px; }
     </div>
     <div class="header-actions">
       <div class="kb-badge" id="kb-badge">⌨ físico</div>
-      <button class="hbtn dark" onclick="openSnapshot()">salvar tudo</button>
+      <button class="hbtn dark" onclick="openSnapshot()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="13" height="13" fill="currentColor"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l48-48a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L85.66,90.34A8,8,0,0,0,74.34,101.66Z"/></svg>salvar tudo</button>
     </div>
   </div>
   <div class="bento" id="bento"></div>
-  <button class="fab" onclick="newNote()">+</button>
+  <button class="fab" onclick="newNote()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="26" height="26" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg></button>
 </div>
 
 <!-- EDITOR -->
 <div class="editor-screen" id="editor">
   <div class="editor-bar">
-    <button class="ebtn" onclick="closeEditor()">← voltar</button>
+    <button class="ebtn" onclick="closeEditor()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="13" height="13" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"/></svg>voltar</button>
     <div class="editor-bar-right">
       <span class="saved-dot" id="saved-dot"></span>
-      <button class="ebtn del" id="btn-del" onclick="openDelete()">apagar</button>
-      <button class="ebtn save" onclick="saveNote()">salvar</button>
+      <button class="ebtn del" id="btn-del" onclick="openDelete()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="13" height="13" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,40a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8v8H112Zm80,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></svg>apagar</button>
+      <button class="ebtn save" onclick="saveNote()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="13" height="13" fill="currentColor"><path d="M219.31,72,184,36.69A15.86,15.86,0,0,0,172.69,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V83.31A15.86,15.86,0,0,0,219.31,72ZM168,208H88V168h80Zm40,0H184V160a8,8,0,0,0-8-8H80a8,8,0,0,0-8,8v48H48V48H168v40a8,8,0,0,0,8,8h40ZM176,80H168V48h8Z"/></svg>salvar</button>
     </div>
   </div>
   <input  class="editor-title" id="ed-title" type="text"
@@ -436,8 +450,8 @@ body.standalone .header { padding-top: 40px; }
     <div class="sheet-title">Apagar nota?</div>
     <div class="sheet-sub">Não pode ser desfeito.</div>
     <div class="sheet-btns">
-      <button class="sbtn danger" onclick="doDelete()">Apagar</button>
-      <button class="sbtn ghost"  onclick="closeDelete()">Cancelar</button>
+      <button class="sbtn danger" onclick="doDelete()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM112,40a8,8,0,0,1,8-8h16a8,8,0,0,1,8,8v8H112Zm80,168H64V64H192ZM112,104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"/></svg>Apagar</button>
+      <button class="sbtn ghost"  onclick="closeDelete()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>Cancelar</button>
     </div>
   </div>
 </div>
@@ -451,9 +465,9 @@ body.standalone .header { padding-top: 40px; }
     <!-- view: main actions -->
     <div id="snap-main">
       <div class="sheet-btns">
-        <button class="sbtn primary" onclick="doDownload()">↓ guardar tudo agora</button>
-        <button class="sbtn ghost"   onclick="showUpload()">↑ abrir backup salvo</button>
-        <button class="sbtn ghost"   onclick="closeSnapshot()">Fechar</button>
+        <button class="sbtn primary" onclick="doDownload()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l48-48a8,8,0,0,0-11.32-11.32L136,124.69V32a8,8,0,0,0-16,0v92.69L85.66,90.34A8,8,0,0,0,74.34,101.66Z"/></svg>guardar tudo agora</button>
+        <button class="sbtn ghost"   onclick="showUpload()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M224,144v64a8,8,0,0,1-8,8H40a8,8,0,0,1-8-8V144a8,8,0,0,1,16,0v56H208V144a8,8,0,0,1,16,0ZM93.66,77.66,120,51.31V152a8,8,0,0,0,16,0V51.31l26.34,26.35a8,8,0,0,0,11.32-11.32l-40-40a8,8,0,0,0-11.32,0l-40,40A8,8,0,0,0,93.66,77.66Z"/></svg>abrir backup salvo</button>
+        <button class="sbtn ghost"   onclick="closeSnapshot()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>Fechar</button>
       </div>
     </div>
 
@@ -464,11 +478,11 @@ body.standalone .header { padding-top: 40px; }
         iOS não baixa arquivos diretamente.<br>
         Selecione tudo abaixo e copie para salvar.
       </div>
-      <button id="ios-copy-btn" class="sbtn primary" style="display:none;margin-bottom:10px;" onclick="copyJSON()">Copiar tudo</button>
+      <button id="ios-copy-btn" class="sbtn primary" style="display:none;margin-bottom:10px;" onclick="copyJSON()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M216,32H88a8,8,0,0,0-8,8V80H40a8,8,0,0,0-8,8V216a8,8,0,0,0,8,8H168a8,8,0,0,0,8-8V176h40a8,8,0,0,0,8-8V40A8,8,0,0,0,216,32ZM160,208H48V96H160Zm48-48H176V88a8,8,0,0,0-8-8H96V48H208Z"/></svg>Copiar tudo</button>
 
       <!-- real file input, visible and tappable -->
       <label class="sbtn ghost upload-label" id="upload-label">
-        Escolher arquivo .json
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M213.66,82.34l-56-56A8,8,0,0,0,152,24H56A16,16,0,0,0,40,40V216a16,16,0,0,0,16,16H200a16,16,0,0,0,16-16V88A8,8,0,0,0,213.66,82.34ZM160,51.31,188.69,80H160ZM200,216H56V40h88V88a8,8,0,0,0,8,8h48V216Zm-45.66-77.66-24-24a8,8,0,0,0-11.32,0l-24,24a8,8,0,0,0,11.32,11.32L120,137.37V184a8,8,0,0,0,16,0V137.37l13.66,13.63A8,8,0,0,0,161,140.29,8.07,8.07,0,0,0,154.34,138.34Z"/></svg>Escolher arquivo .json
         <input type="file" id="restore-file" accept=".json,.txt,.md"
           style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer"
           onchange="readFile(event)">
@@ -480,8 +494,8 @@ body.standalone .header { padding-top: 40px; }
       <textarea id="restore-ta" class="restore-ta"
         placeholder="cole o conteúdo do snapshot aqui..."></textarea>
       <div class="sheet-btns">
-        <button class="sbtn primary" onclick="doRestore()">Restaurar agora</button>
-        <button class="sbtn ghost"   onclick="showMain()">Voltar</button>
+        <button class="sbtn primary" onclick="doRestore()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M231.11,40.09a8,8,0,0,0-8.56,1.73L212.67,51.7A96,96,0,1,0,224,128a8,8,0,0,0-16,0A80,80,0,1,1,198.44,69.17L189.66,78A8,8,0,0,0,195.31,92H224a8,8,0,0,0,8-8V56A8,8,0,0,0,231.11,40.09Z"/></svg>Restaurar agora</button>
+        <button class="sbtn ghost"   onclick="showMain()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="15" height="15" fill="currentColor"><path d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z"/></svg>Voltar</button>
       </div>
     </div>
   </div>
@@ -569,43 +583,29 @@ function renderList() {
 
   el.innerHTML = '';
 
-  // Build row pattern:
-  //   index 0        → wide row (1 card)
-  //   index 1,2      → pair row (2 cards)
-  //   index 3,4      → pair row (2 cards)
-  //   index 5        → wide row
-  //   index 6,7      → pair row … repeat
+  // Two equal cards per row — uniform moleskine grid
   var i = 0;
   while (i < sorted.length) {
-    var isWide = (i === 0) || (i % 5 === 0);
     var row = document.createElement('div');
     row.className = 'bento-row';
-
-    if (isWide) {
-      row.appendChild(makeCard(sorted[i], true));
+    row.appendChild(makeCard(sorted[i]));
+    i++;
+    if (i < sorted.length) {
+      row.appendChild(makeCard(sorted[i]));
       i++;
-    } else {
-      row.appendChild(makeCard(sorted[i], false));
-      i++;
-      if (i < sorted.length) {
-        row.appendChild(makeCard(sorted[i], false));
-        i++;
-      }
     }
-
     el.appendChild(row);
   }
 }
 
-function makeCard(n, wide) {
+function makeCard(n) {
   var card = document.createElement('div');
-  card.className = wide ? 'note-card wide' : 'note-card';
+  card.className = 'note-card';
   card.setAttribute('data-id', n.id);
 
   var title = n.title || 'Sem título';
   var preview = (n.body || '').replace(/\n+/g,' ').trim() || '—';
-  var maxPrev = wide ? 120 : 55;
-  if (preview.length > maxPrev) preview = preview.slice(0, maxPrev) + '…';
+  if (preview.length > 70) preview = preview.slice(0, 70) + '…';
 
   card.innerHTML =
     '<div class="note-card-title">' + esc(title) + '</div>' +
