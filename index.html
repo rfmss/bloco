@@ -110,35 +110,40 @@ body.standalone .header { padding-top: 40px; }
   color: #f0ece4;
 }
 
-/* ── Bento — row-based, equal squares ── */
+/* ── Bento — responsivo, calculado por JS ── */
 .bento {
   padding: 4px 14px 130px;
 }
 .bento-row {
+  display: -webkit-box;
   display: -webkit-flex;
   display: flex;
+  -webkit-box-orient: horizontal;
   -webkit-flex-direction: row;
   flex-direction: row;
   margin-bottom: 10px;
 }
 .bento-row > * + * { margin-left: 10px; }
 
-/* Card base — uniform moleskine-style squares */
+/* Card base — dimensões definidas por JS (width e height via style) */
 .note-card {
-  -webkit-flex: 1;
-  flex: 1;
   background: #f0ece4;
   border-radius: 14px;
   padding: 14px 14px 11px;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(0,0,0,0.07);
   overflow: hidden;
-  height: 140px;
   -webkit-transition: -webkit-transform 0.14s;
   transition: transform 0.14s;
   position: relative;
-  display: -webkit-flex; display: flex;
-  -webkit-flex-direction: column; flex-direction: column;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  /* fallback mínimo caso JS não rode */
+  min-height: 120px;
 }
 .note-card:active {
   -webkit-transform: scale(0.97);
@@ -147,13 +152,14 @@ body.standalone .header { padding-top: 40px; }
 
 .note-card-title {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #2a2a2a;
   margin-bottom: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  -webkit-flex-shrink: 0; flex-shrink: 0;
 }
 .note-card-preview {
   font-family: 'Courier New', Courier, monospace;
@@ -161,12 +167,12 @@ body.standalone .header { padding-top: 40px; }
   color: #777;
   line-height: 1.5;
   overflow: hidden;
+  -webkit-box-flex: 1;
+  -webkit-flex: 1;
+  flex: 1;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
-}
-.note-card-preview {
-  -webkit-flex: 1; flex: 1;
 }
 .note-card-date {
   font-family: 'Courier New', Courier, monospace;
@@ -558,9 +564,22 @@ var curId = null;
 var asTimer = null;
 
 // ══════════════════════════════════════════════════════════
-// BENTO — row-based, no nth-child tricks
+// BENTO — responsivo: colunas e tamanho calculados por tela
 // ══════════════════════════════════════════════════════════
 var MONTHS = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+function calcLayout() {
+  var w = window.innerWidth || document.documentElement.clientWidth || 320;
+  var padH = 28;   // 14px cada lado
+  var gap  = 10;
+  // Calcula quantas colunas cabem mantendo card mínimo de 150px
+  var cols = Math.floor((w - padH + gap) / (150 + gap));
+  if (cols < 2) cols = 2;
+  if (cols > 4) cols = 4;
+  var cardW = Math.floor((w - padH - gap * (cols - 1)) / cols);
+  var cardH = Math.floor(cardW * 0.78); // proporção livro de notas
+  return { cols: cols, cardW: cardW, cardH: cardH };
+}
 
 function fmtDate(ts) {
   var d = new Date(ts || Date.now());
@@ -583,29 +602,30 @@ function renderList() {
 
   el.innerHTML = '';
 
-  // Two equal cards per row — uniform moleskine grid
+  var layout = calcLayout();
   var i = 0;
   while (i < sorted.length) {
     var row = document.createElement('div');
     row.className = 'bento-row';
-    row.appendChild(makeCard(sorted[i]));
-    i++;
-    if (i < sorted.length) {
-      row.appendChild(makeCard(sorted[i]));
+    for (var c = 0; c < layout.cols && i < sorted.length; c++) {
+      row.appendChild(makeCard(sorted[i], layout));
       i++;
     }
     el.appendChild(row);
   }
 }
 
-function makeCard(n) {
+function makeCard(n, layout) {
   var card = document.createElement('div');
   card.className = 'note-card';
   card.setAttribute('data-id', n.id);
+  card.style.width  = layout.cardW + 'px';
+  card.style.height = layout.cardH + 'px';
 
   var title = n.title || 'Sem título';
   var preview = (n.body || '').replace(/\n+/g,' ').trim() || '—';
-  if (preview.length > 70) preview = preview.slice(0, 70) + '…';
+  var maxPrev = layout.cols >= 3 ? 55 : 80;
+  if (preview.length > maxPrev) preview = preview.slice(0, maxPrev) + '…';
 
   card.innerHTML =
     '<div class="note-card-title">' + esc(title) + '</div>' +
@@ -963,6 +983,17 @@ if (window.navigator.standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches) {
   document.body.className = (document.body.className + ' standalone').trim();
 }
+
+// ══════════════════════════════════════════════════════════
+// RESPONSIVE — re-renderiza ao mudar orientação
+// ══════════════════════════════════════════════════════════
+window.addEventListener('orientationchange', function() {
+  setTimeout(renderList, 300);
+}, false);
+window.addEventListener('resize', function() {
+  clearTimeout(window._resizeT);
+  window._resizeT = setTimeout(renderList, 200);
+}, false);
 
 // ══════════════════════════════════════════════════════════
 // INIT
