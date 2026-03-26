@@ -10,7 +10,6 @@
 <link rel="apple-touch-icon" href="icon.png">
 <title>bloco</title>
 <style>
-/* ── Reset ── */
 *, *:before, *:after {
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -18,33 +17,20 @@
   padding: 0;
   -webkit-tap-highlight-color: transparent;
 }
-
-/* ── Tokens ── */
-:root {
-  --bg:      #b2c9c3;
-  --surface: #f0ece4;
-  --text:    #0d0d0d;
-  --muted:   #555;
-  --border:  rgba(0,0,0,0.10);
-  --accent:  #0d0d0d;
-  --danger:  #c0392b;
-}
-
-/* ── Base ── */
 html, body {
   height: 100%;
-  background: var(--bg);
-  color: var(--text);
+  background: #b2c9c3;
+  color: #0d0d0d;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 17px;
   line-height: 1.6;
   -webkit-text-size-adjust: 100%;
+  overflow-x: hidden;
 }
 
 /* ── Header ── */
 .header {
-  background: var(--bg);
-  padding: 20px 20px 12px;
+  padding: 22px 16px 10px;
   display: -webkit-flex;
   display: flex;
   -webkit-align-items: flex-end;
@@ -53,121 +39,206 @@ html, body {
   justify-content: space-between;
 }
 .header-title {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--text);
+  letter-spacing: -0.8px;
   line-height: 1;
 }
+.header-right {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+}
+.header-right > * + * { margin-left: 8px; }
 .header-count {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--muted);
-  padding-bottom: 3px;
+  color: #444;
+  padding-bottom: 4px;
+}
+.btn-export {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.12);
+  border: none;
+  border-radius: 20px;
+  padding: 5px 11px;
+  color: #0d0d0d;
+  cursor: pointer;
+}
+.btn-export:active { opacity: 0.7; }
+
+/* ── Keyboard indicator ── */
+.kb-indicator {
+  display: none;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: rgba(0,0,0,0.12);
+  border-radius: 20px;
+  padding: 5px 11px;
+  color: #0d0d0d;
+}
+.kb-indicator.visible { display: block; }
+
+/* ── Bento grid ── */
+.bento {
+  padding: 4px 12px 120px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-align-items: flex-start;
+  align-items: flex-start;
 }
 
-/* ── Note List ── */
-.list {
-  padding: 0 16px 120px;
-}
+/* small cards: two per row */
 .note-card {
-  background: var(--surface);
+  width: calc(50% - 5px);
+  margin: 4px 0;
+  background: #f0ece4;
   border-radius: 14px;
-  padding: 16px 18px;
-  margin-bottom: 10px;
+  padding: 14px 14px 12px;
   cursor: pointer;
-  -webkit-transition: -webkit-transform 0.15s, box-shadow 0.15s;
-  transition: transform 0.15s, box-shadow 0.15s;
+  -webkit-transition: -webkit-transform 0.15s;
+  transition: transform 0.15s;
   position: relative;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  overflow: hidden;
+  vertical-align: top;
+  min-height: 88px;
 }
+.note-card:nth-child(odd) { margin-right: 5px; }
+.note-card:nth-child(even) { margin-left: 5px; }
+
+/* wide card: every 5th */
+.note-card.wide {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+/* tall first card */
+.note-card.tall { min-height: 130px; }
+
 .note-card:active {
-  -webkit-transform: scale(0.98);
-  transform: scale(0.98);
+  -webkit-transform: scale(0.97);
+  transform: scale(0.97);
 }
 .note-card-title {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 700;
-  color: var(--text);
-  margin-bottom: 4px;
+  color: #0d0d0d;
+  margin-bottom: 5px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .note-card-preview {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
-  color: var(--muted);
-  white-space: nowrap;
+  font-size: 11px;
+  color: #666;
+  line-height: 1.45;
   overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 .note-card-date {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 10px;
-  letter-spacing: 0.08em;
+  font-size: 9px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #999;
+  color: #aaa;
   margin-top: 8px;
 }
 
-/* ── Empty state ── */
+/* ── Empty ── */
 .empty {
   text-align: center;
   padding: 80px 32px;
+  width: 100%;
 }
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: 16px;
-  opacity: 0.3;
-}
+.empty-icon { font-size: 44px; margin-bottom: 14px; opacity: 0.3; }
 .empty-text {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
-  letter-spacing: 0.1em;
+  font-size: 12px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: #555;
 }
 
-/* ── FAB (new note button) ── */
+/* ── FAB ── */
 .fab {
   position: fixed;
   bottom: 28px;
-  right: 20px;
-  width: 56px;
-  height: 56px;
+  right: 18px;
+  width: 54px;
+  height: 54px;
   border-radius: 50%;
-  background: var(--accent);
+  background: #0d0d0d;
   color: #fff;
   border: none;
-  font-size: 26px;
-  line-height: 56px;
+  font-size: 28px;
+  line-height: 54px;
   text-align: center;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
   z-index: 50;
-  -webkit-transition: -webkit-transform 0.15s;
-  transition: transform 0.15s;
+  -webkit-transition: -webkit-transform 0.12s;
+  transition: transform 0.12s;
 }
-.fab:active {
-  -webkit-transform: scale(0.92);
-  transform: scale(0.92);
+.fab:active { -webkit-transform: scale(0.90); transform: scale(0.90); }
+
+/* ── Backup bar ── */
+.backup-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0d0d0d;
+  color: #f0ece4;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  z-index: 60;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+.backup-bar.show {
+  display: -webkit-flex;
+  display: flex;
+}
+.backup-bar-btn {
+  background: #f0ece4;
+  color: #0d0d0d;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
 }
 
-/* ── Editor screen ── */
+/* ── Editor ── */
 .editor-screen {
   display: none;
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--surface);
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: #f0ece4;
   z-index: 100;
   -webkit-flex-direction: column;
   flex-direction: column;
@@ -177,9 +248,9 @@ html, body {
   display: flex;
 }
 .editor-bar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 16px;
+  background: #f0ece4;
+  border-bottom: 1px solid rgba(0,0,0,0.09);
+  padding: 13px 14px;
   display: -webkit-flex;
   display: flex;
   -webkit-align-items: center;
@@ -191,18 +262,17 @@ html, body {
 }
 .btn-back {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text);
+  color: #0d0d0d;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0,0,0,0.15);
   border-radius: 8px;
-  padding: 7px 14px;
+  padding: 7px 13px;
   cursor: pointer;
 }
 .btn-back:active { opacity: 0.6; }
-
 .editor-bar-right {
   display: -webkit-flex;
   display: flex;
@@ -210,46 +280,53 @@ html, body {
   align-items: center;
 }
 .editor-bar-right > * + * { margin-left: 8px; }
-
+.saved-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #5a9e50;
+  display: inline-block;
+  opacity: 0;
+  -webkit-transition: opacity 0.3s;
+  transition: opacity 0.3s;
+}
+.saved-dot.show { opacity: 1; }
 .btn-delete {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--danger);
+  color: #c0392b;
   background: none;
-  border: 1px solid rgba(192,57,43,0.3);
+  border: 1px solid rgba(192,57,43,0.28);
   border-radius: 8px;
-  padding: 7px 14px;
+  padding: 7px 13px;
   cursor: pointer;
   display: none;
 }
-.btn-delete.visible { display: block; }
+.btn-delete.vis { display: block; }
 .btn-delete:active { opacity: 0.6; }
-
 .btn-save {
   font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: #fff;
-  background: var(--accent);
+  background: #0d0d0d;
   border: none;
   border-radius: 8px;
-  padding: 8px 16px;
+  padding: 8px 15px;
   cursor: pointer;
 }
 .btn-save:active { opacity: 0.7; }
-
 .editor-title-input {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 22px;
   font-weight: 700;
-  color: var(--text);
+  color: #0d0d0d;
   border: none;
   outline: none;
   background: transparent;
-  padding: 16px 20px 8px;
+  padding: 16px 18px 8px;
   width: 100%;
   -webkit-flex-shrink: 0;
   flex-shrink: 0;
@@ -257,53 +334,38 @@ html, body {
   -webkit-appearance: none;
   border-radius: 0;
 }
-.editor-title-input::-webkit-input-placeholder { color: #bbb; font-weight: 400; }
-
+.editor-title-input::-webkit-input-placeholder { color: #c8c0b4; font-weight: 400; }
 .editor-body-input {
   font-family: 'Courier New', Courier, monospace;
   font-size: 15px;
-  color: var(--text);
+  color: #0d0d0d;
   border: none;
   outline: none;
   background: transparent;
-  padding: 8px 20px 40px;
+  padding: 8px 18px 40px;
   width: 100%;
   -webkit-flex: 1;
   flex: 1;
   resize: none;
-  line-height: 1.7;
+  line-height: 1.75;
   -webkit-overflow-scrolling: touch;
   overflow-y: auto;
   -webkit-appearance: none;
   border-radius: 0;
 }
-.editor-body-input::-webkit-input-placeholder { color: #bbb; }
-
-/* ── Saved indicator ── */
-.saved-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #6ab04c;
-  display: inline-block;
-  opacity: 0;
-  margin-left: 8px;
-  -webkit-transition: opacity 0.3s;
-  transition: opacity 0.3s;
-}
-.saved-dot.show { opacity: 1; }
+.editor-body-input::-webkit-input-placeholder { color: #c8c0b4; }
 
 /* ── Toast ── */
 .toast {
   position: fixed;
-  bottom: 100px;
+  bottom: 90px;
   left: 50%;
   -webkit-transform: translateX(-50%) translateY(20px);
   transform: translateX(-50%) translateY(20px);
-  background: var(--text);
+  background: #0d0d0d;
   color: #fff;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 10px 20px;
@@ -311,6 +373,7 @@ html, body {
   opacity: 0;
   z-index: 999;
   pointer-events: none;
+  white-space: nowrap;
   -webkit-transition: opacity 0.2s, -webkit-transform 0.2s;
   transition: opacity 0.2s, transform 0.2s;
 }
@@ -320,7 +383,7 @@ html, body {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ── Delete confirm ── */
+/* ── Confirm sheet ── */
 .confirm-overlay {
   display: none;
   position: fixed;
@@ -332,59 +395,106 @@ html, body {
   -webkit-justify-content: center;
   justify-content: center;
 }
-.confirm-overlay.open {
-  display: -webkit-flex;
-  display: flex;
-}
+.confirm-overlay.open { display: -webkit-flex; display: flex; }
 .confirm-sheet {
-  background: var(--surface);
+  background: #f0ece4;
   border-radius: 16px 16px 0 0;
-  padding: 24px 24px 40px;
+  padding: 24px 20px 44px;
   width: 100%;
 }
-.confirm-title {
-  font-family: Georgia, serif;
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
+.confirm-title { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
 .confirm-sub {
   font-family: 'Courier New', monospace;
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 11px;
+  color: #666;
   letter-spacing: 0.06em;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
-.confirm-btns {
+.confirm-btns { display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+.confirm-btns > * + * { margin-top: 10px; }
+.confirm-btn-del {
+  background: #c0392b; color: #fff;
+  border: none; border-radius: 10px; padding: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+}
+.confirm-btn-cancel {
+  background: none; border: 1px solid rgba(0,0,0,0.12);
+  border-radius: 10px; padding: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer;
+  color: #0d0d0d;
+}
+
+/* ── Export modal ── */
+.export-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 300;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding: 20px;
+}
+.export-modal.open { display: -webkit-flex; display: flex; }
+.export-sheet {
+  background: #f0ece4;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
   display: -webkit-flex;
   display: flex;
   -webkit-flex-direction: column;
   flex-direction: column;
 }
-.confirm-btns > * + * { margin-top: 10px; }
-.confirm-btn-del {
-  background: var(--danger);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  padding: 14px;
-  font-family: 'Courier New', monospace;
-  font-size: 13px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: pointer;
+.export-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 5px;
 }
-.confirm-btn-cancel {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
+.export-sub {
   font-family: 'Courier New', monospace;
-  font-size: 13px;
-  letter-spacing: 0.12em;
+  font-size: 10px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  cursor: pointer;
-  color: var(--text);
+  color: #888;
+  margin-bottom: 12px;
+}
+.export-textarea {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #333;
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px;
+  padding: 10px;
+  resize: none;
+  height: 180px;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  background: #fff;
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.export-btns { display: -webkit-flex; display: flex; }
+.export-btns > * + * { margin-left: 8px; }
+.export-btn-copy {
+  -webkit-flex: 1; flex: 1;
+  background: #0d0d0d; color: #fff;
+  border: none; border-radius: 8px; padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+}
+.export-btn-close {
+  background: none; border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px; padding: 12px 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;
+  color: #0d0d0d;
 }
 </style>
 </head>
@@ -394,9 +504,13 @@ html, body {
 <div id="list-screen">
   <div class="header">
     <div class="header-title">bloco</div>
-    <div class="header-count" id="note-count">0 notas</div>
+    <div class="header-right">
+      <div class="kb-indicator" id="kb-indicator">⌨ físico</div>
+      <span class="header-count" id="note-count">0 notas</span>
+      <button class="btn-export" onclick="openExport()">↓ backup</button>
+    </div>
   </div>
-  <div class="list" id="note-list"></div>
+  <div class="bento" id="note-list"></div>
   <button class="fab" id="btn-new" onclick="newNote()">+</button>
 </div>
 
@@ -411,20 +525,14 @@ html, body {
     </div>
   </div>
   <input
-    class="editor-title-input"
-    id="editor-title"
-    type="text"
-    placeholder="Título"
-    autocomplete="off"
-    autocorrect="on"
-    autocapitalize="sentences"
+    class="editor-title-input" id="editor-title"
+    type="text" placeholder="Título"
+    autocomplete="off" autocorrect="on" autocapitalize="sentences"
   >
   <textarea
-    class="editor-body-input"
-    id="editor-body"
+    class="editor-body-input" id="editor-body"
     placeholder="Escreva aqui..."
-    autocorrect="on"
-    autocapitalize="sentences"
+    autocorrect="on" autocapitalize="sentences"
   ></textarea>
 </div>
 
@@ -440,45 +548,102 @@ html, body {
   </div>
 </div>
 
+<!-- EXPORT MODAL -->
+<div class="export-modal" id="export-modal" onclick="closeExport()">
+  <div class="export-sheet" onclick="stopProp(event)">
+    <div class="export-title">Backup das notas</div>
+    <div class="export-sub" id="export-sub">copie e guarde este JSON</div>
+    <textarea class="export-textarea" id="export-textarea" readonly="readonly"></textarea>
+    <div class="export-btns">
+      <button class="export-btn-copy" onclick="copyExport()">Copiar tudo</button>
+      <button class="export-btn-close" onclick="closeExport()">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Storage ──────────────────────────────────────────────
-var STORE_KEY = 'bloco_v1';
+// ══════════════════════════════════════════════════════════
+// STORAGE — dual-key + integrity check
+// ══════════════════════════════════════════════════════════
+var KEY_A = 'bloco_v2_a';
+var KEY_B = 'bloco_v2_b';
 
-function loadNotes() {
+function lsAvailable() {
   try {
-    var raw = localStorage.getItem(STORE_KEY);
-    return raw ? JSON.parse(raw) : [];
+    localStorage.setItem('__test__', '1');
+    localStorage.removeItem('__test__');
+    return true;
   } catch(e) {
-    return [];
+    return false;
   }
 }
 
-function saveNotes(notes) {
+var LS_OK = lsAvailable();
+
+function loadNotes() {
+  if (!LS_OK) return [];
   try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(notes));
+    var raw = localStorage.getItem(KEY_A) || localStorage.getItem(KEY_B);
+    if (!raw) return [];
+    var parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch(e) {
-    showToast('Erro ao salvar');
+    // Try backup key
+    try {
+      var raw2 = localStorage.getItem(KEY_B);
+      if (!raw2) return [];
+      var p2 = JSON.parse(raw2);
+      return Array.isArray(p2) ? p2 : [];
+    } catch(e2) {
+      return [];
+    }
+  }
+}
+
+function persistNotes(arr) {
+  if (!LS_OK) {
+    showToast('Modo privado — use o backup manual');
+    return false;
+  }
+  try {
+    var json = JSON.stringify(arr);
+    localStorage.setItem(KEY_A, json);
+    try { localStorage.setItem(KEY_B, json); } catch(e) {} // best effort second copy
+    return true;
+  } catch(e) {
+    // Storage full? try clearing old backups
+    try {
+      localStorage.removeItem(KEY_B);
+      localStorage.setItem(KEY_A, JSON.stringify(arr));
+      return true;
+    } catch(e2) {
+      showToast('Armazenamento cheio — faça um backup');
+      return false;
+    }
   }
 }
 
 function genId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
-// ── State ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
 var notes = loadNotes();
 var currentId = null;
 var autoSaveTimer = null;
 
-// ── List ──────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// BENTO LIST RENDER
+// ══════════════════════════════════════════════════════════
 function renderList() {
   var listEl = document.getElementById('note-list');
   var countEl = document.getElementById('note-count');
 
-  // Sort by updatedAt desc
   var sorted = notes.slice().sort(function(a, b) {
     return (b.updatedAt || 0) - (a.updatedAt || 0);
   });
@@ -495,19 +660,29 @@ function renderList() {
   }
 
   listEl.innerHTML = '';
+  var months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
   for (var i = 0; i < sorted.length; i++) {
     var n = sorted[i];
     var card = document.createElement('div');
-    card.className = 'note-card';
+
+    // Bento sizing: index 0 → wide+tall, every 5th → wide
+    var isWide = (i === 0) || (i % 5 === 0 && i !== 0);
+    var isTall = (i === 0);
+    var cls = 'note-card';
+    if (isWide) cls += ' wide';
+    if (isTall) cls += ' tall';
+    card.className = cls;
     card.setAttribute('data-id', n.id);
 
     var title = n.title || 'Sem título';
-    var preview = (n.body || '').replace(/\n/g, ' ').trim();
-    if (!preview) preview = 'Nota vazia';
-    if (preview.length > 60) preview = preview.slice(0, 60) + '…';
+    var preview = (n.body || '').replace(/\n+/g, ' ').trim();
+    if (!preview) preview = '—';
+    // wide cards show more preview
+    var maxLen = isWide ? 120 : 55;
+    if (preview.length > maxLen) preview = preview.slice(0, maxLen) + '…';
 
-    var d = new Date(n.updatedAt || n.createdAt);
-    var months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    var d = new Date(n.updatedAt || n.createdAt || Date.now());
     var dateStr = d.getDate() + ' ' + months[d.getMonth()] + ' · ' +
       (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' +
       (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
@@ -525,18 +700,16 @@ function renderList() {
   }
 }
 
-// ── Editor ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// EDITOR
+// ══════════════════════════════════════════════════════════
 function openNote(id) {
-  var note = null;
-  for (var i = 0; i < notes.length; i++) {
-    if (notes[i].id === id) { note = notes[i]; break; }
-  }
+  var note = findNote(id);
   if (!note) return;
-
   currentId = id;
   document.getElementById('editor-title').value = note.title || '';
   document.getElementById('editor-body').value = note.body || '';
-  document.getElementById('btn-delete').className = 'btn-delete visible';
+  document.getElementById('btn-delete').className = 'btn-delete vis';
   hideSavedDot();
   showEditor();
 }
@@ -548,9 +721,12 @@ function newNote() {
   document.getElementById('btn-delete').className = 'btn-delete';
   hideSavedDot();
   showEditor();
-  setTimeout(function() {
-    document.getElementById('editor-title').focus();
-  }, 300);
+  // only auto-focus if NOT physical keyboard (avoids virtual kb pop on physical kb)
+  if (!physKb) {
+    setTimeout(function() {
+      document.getElementById('editor-title').focus();
+    }, 250);
+  }
 }
 
 function showEditor() {
@@ -559,7 +735,7 @@ function showEditor() {
 }
 
 function closeEditor() {
-  autoSave();
+  autoSaveNow();
   document.getElementById('editor-screen').className = 'editor-screen';
   document.body.style.overflow = '';
   currentId = null;
@@ -578,50 +754,53 @@ function saveNote() {
   var now = Date.now();
 
   if (currentId) {
+    var found = false;
     for (var i = 0; i < notes.length; i++) {
       if (notes[i].id === currentId) {
         notes[i].title = title;
         notes[i].body = body;
         notes[i].updatedAt = now;
+        found = true;
         break;
       }
     }
+    if (!found) {
+      // Note was deleted externally, recreate
+      notes.push({ id: currentId, title: title, body: body, createdAt: now, updatedAt: now });
+    }
   } else {
-    var note = { id: genId(), title: title, body: body, createdAt: now, updatedAt: now };
-    notes.push(note);
-    currentId = note.id;
-    document.getElementById('btn-delete').className = 'btn-delete visible';
+    var newNote = { id: genId(), title: title, body: body, createdAt: now, updatedAt: now };
+    notes.push(newNote);
+    currentId = newNote.id;
+    document.getElementById('btn-delete').className = 'btn-delete vis';
   }
 
-  saveNotes(notes);
-  showSavedDot();
+  var ok = persistNotes(notes);
+  if (ok) showSavedDot();
 }
 
-function autoSave() {
+function autoSaveNow() {
   var title = document.getElementById('editor-title').value.trim();
   var body = document.getElementById('editor-body').value;
   if (title || body.trim()) saveNote();
 }
 
-// ── Delete ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+// DELETE
+// ══════════════════════════════════════════════════════════
 function confirmDelete() {
   document.getElementById('confirm-overlay').className = 'confirm-overlay open';
 }
-
 function cancelDelete() {
   document.getElementById('confirm-overlay').className = 'confirm-overlay';
 }
-
 function doDelete() {
   cancelDelete();
   if (!currentId) return;
   for (var i = 0; i < notes.length; i++) {
-    if (notes[i].id === currentId) {
-      notes.splice(i, 1);
-      break;
-    }
+    if (notes[i].id === currentId) { notes.splice(i, 1); break; }
   }
-  saveNotes(notes);
+  persistNotes(notes);
   document.getElementById('editor-screen').className = 'editor-screen';
   document.body.style.overflow = '';
   currentId = null;
@@ -629,20 +808,137 @@ function doDelete() {
   showToast('Nota apagada');
 }
 
-function stopProp(e) {
-  e.stopPropagation();
+// ══════════════════════════════════════════════════════════
+// EXPORT / BACKUP
+// ══════════════════════════════════════════════════════════
+function buildExportText() {
+  var lines = [];
+  var sorted = notes.slice().sort(function(a,b){ return (b.updatedAt||0)-(a.updatedAt||0); });
+  for (var i = 0; i < sorted.length; i++) {
+    var n = sorted[i];
+    var d = new Date(n.updatedAt || n.createdAt || 0);
+    lines.push('=== ' + (n.title || 'Sem título') + ' (' + d.toLocaleDateString('pt-BR') + ') ===');
+    lines.push(n.body || '');
+    lines.push('');
+  }
+  return lines.join('\n');
 }
 
-// ── Helpers ───────────────────────────────────────────────
+function openExport() {
+  var txt = buildExportText();
+  var ta = document.getElementById('export-textarea');
+  ta.value = txt;
+  document.getElementById('export-sub').textContent =
+    notes.length + ' nota(s) · selecione tudo e copie';
+  document.getElementById('export-modal').className = 'export-modal open';
+  setTimeout(function() { ta.select(); }, 200);
+}
+
+function closeExport() {
+  document.getElementById('export-modal').className = 'export-modal';
+}
+
+function copyExport() {
+  var ta = document.getElementById('export-textarea');
+  ta.select();
+  try {
+    document.execCommand('copy');
+    showToast('Copiado!');
+  } catch(e) {
+    showToast('Selecione e copie manualmente');
+  }
+}
+
+// ── Auto-backup every 30s: silently re-persist ────────────
+setInterval(function() {
+  if (!LS_OK || notes.length === 0) return;
+  try {
+    var json = JSON.stringify(notes);
+    localStorage.setItem(KEY_B, json); // backup key refresh
+  } catch(e) {}
+}, 30000);
+
+// ══════════════════════════════════════════════════════════
+// PHYSICAL KEYBOARD DETECTION
+// ══════════════════════════════════════════════════════════
+var physKb = false;
+var lastTouchTime = 0;
+
+document.addEventListener('touchstart', function() {
+  lastTouchTime = Date.now();
+}, true);
+
+document.addEventListener('keydown', function(e) {
+  // If a printable key fires >600ms after any touch → physical keyboard
+  if (e.key && e.key.length === 1 && (Date.now() - lastTouchTime) > 600) {
+    if (!physKb) {
+      physKb = true;
+      document.getElementById('kb-indicator').className = 'kb-indicator visible';
+    }
+  }
+  if (e.keyCode === 27) closeEditor();  // ESC
+  if ((e.metaKey || e.ctrlKey) && e.keyCode === 83) { // Cmd/Ctrl+S
+    e.preventDefault();
+    saveNote();
+  }
+}, true);
+
+// When physical keyboard detected, prevent virtual kb on title/body
+// by setting inputmode=none (supported iOS 12.2+; no-op on iOS 9 but harmless)
+function applyKbMode() {
+  if (physKb) {
+    var t = document.getElementById('editor-title');
+    var b = document.getElementById('editor-body');
+    if (t.getAttribute('inputmode') !== 'none') {
+      t.setAttribute('inputmode', 'none');
+      b.setAttribute('inputmode', 'none');
+    }
+  }
+}
+
+document.getElementById('editor-title').addEventListener('focus', applyKbMode);
+document.getElementById('editor-body').addEventListener('focus', applyKbMode);
+
+// Restore normal inputmode on any touch of the input (user wants virtual kb)
+document.getElementById('editor-title').addEventListener('touchstart', function() {
+  this.removeAttribute('inputmode');
+  physKb = false;
+  document.getElementById('kb-indicator').className = 'kb-indicator';
+});
+document.getElementById('editor-body').addEventListener('touchstart', function() {
+  this.removeAttribute('inputmode');
+  physKb = false;
+  document.getElementById('kb-indicator').className = 'kb-indicator';
+});
+
+// ══════════════════════════════════════════════════════════
+// AUTO-SAVE ON INPUT
+// ══════════════════════════════════════════════════════════
+document.getElementById('editor-title').addEventListener('input', function() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSaveNow, 1500);
+});
+document.getElementById('editor-body').addEventListener('input', function() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSaveNow, 1500);
+});
+
+// ══════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════
+function findNote(id) {
+  for (var i = 0; i < notes.length; i++) {
+    if (notes[i].id === id) return notes[i];
+  }
+  return null;
+}
+
 function showSavedDot() {
   var dot = document.getElementById('saved-dot');
   dot.className = 'saved-dot show';
-  clearTimeout(dot._timer);
-  dot._timer = setTimeout(function() {
-    dot.className = 'saved-dot';
-  }, 2000);
+  clearTimeout(dot._t);
+  dot._t = setTimeout(function() { dot.className = 'saved-dot'; }, 2200);
 }
-
 function hideSavedDot() {
   document.getElementById('saved-dot').className = 'saved-dot';
 }
@@ -651,35 +947,26 @@ function showToast(msg) {
   var t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show';
-  clearTimeout(t._timer);
-  t._timer = setTimeout(function() { t.className = 'toast'; }, 2200);
+  clearTimeout(t._t);
+  t._t = setTimeout(function() { t.className = 'toast'; }, 2500);
 }
 
 function escHtml(s) {
-  return s
+  return String(s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+    .replace(/>/g, '&gt;');
 }
 
-// ── Auto-save on input ────────────────────────────────────
-document.getElementById('editor-title').addEventListener('input', function() {
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(autoSave, 1500);
-});
+function stopProp(e) { e.stopPropagation(); }
 
-document.getElementById('editor-body').addEventListener('input', function() {
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(autoSave, 1500);
-});
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+if (!LS_OK) {
+  showToast('Modo privado — notas não serão salvas');
+}
 
-// ── iOS back gesture / keyboard ───────────────────────────
-document.addEventListener('keydown', function(e) {
-  if (e.keyCode === 27) closeEditor();
-});
-
-// ── Init ──────────────────────────────────────────────────
 renderList();
 </script>
 </body>
