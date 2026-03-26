@@ -357,25 +357,29 @@ html, body {
 .sbtn.danger   { background: #c0392b; color: #fff; }
 .sbtn.ghost    { background: none; border: 1px solid rgba(0,0,0,0.14); color: #0d0d0d; }
 
-/* ── Restore textarea (inside sheet) ── */
-.restore-area {
-  display: none;
-  margin-top: 12px;
+/* ── Upload label (acts as button + file input wrapper) ── */
+.upload-label {
+  display: block;
+  position: relative;
+  text-align: center;
+  margin-bottom: 4px;
+  overflow: hidden;
 }
-.restore-area.on { display: block; }
+/* ── Restore textarea ── */
 .restore-ta {
   font-family: 'Courier New', monospace;
   font-size: 11px;
-  border: 1px solid rgba(0,0,0,0.15);
-  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.14);
+  border-radius: 10px;
   padding: 10px;
   width: 100%;
-  height: 140px;
+  height: 120px;
   resize: none;
   -webkit-overflow-scrolling: touch;
   background: #fff;
   margin-bottom: 10px;
   line-height: 1.5;
+  display: block;
 }
 </style>
 </head>
@@ -432,20 +436,34 @@ html, body {
   <div class="sheet" onclick="stopProp(event)">
     <div class="sheet-title">Snapshot</div>
     <div class="sheet-sub" id="snap-sub">fotografia completa do bloco</div>
-    <div class="sheet-btns">
-      <button class="sbtn primary" onclick="doSave()">↓ salvar snapshot</button>
-      <button class="sbtn ghost"   onclick="toggleRestoreArea()">↑ restaurar snapshot</button>
-      <button class="sbtn ghost"   onclick="closeSnapshot()">Cancelar</button>
-    </div>
-    <!-- restore area: paste JSON or pick file -->
-    <div class="restore-area" id="restore-area">
-      <textarea class="restore-ta" id="restore-ta"
-        placeholder='Cole o JSON aqui, ou escolha o arquivo abaixo...'></textarea>
-      <input type="file" id="restore-file" accept=".json,.txt,.md"
-        style="display:none" onchange="readFile(event)">
+
+    <!-- view: main actions -->
+    <div id="snap-main">
       <div class="sheet-btns">
-        <button class="sbtn ghost" onclick="pickFile()">Escolher arquivo</button>
+        <button class="sbtn primary" onclick="doDownload()">↓ baixar arquivo</button>
+        <button class="sbtn ghost"   onclick="showUpload()">↑ restaurar de arquivo</button>
+        <button class="sbtn ghost"   onclick="closeSnapshot()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- view: upload / restore -->
+    <div id="snap-upload" style="display:none">
+      <!-- real file input, visible and tappable -->
+      <label class="sbtn primary upload-label" id="upload-label">
+        Escolher arquivo .json
+        <input type="file" id="restore-file" accept=".json,.txt,.md"
+          style="position:absolute;opacity:0;top:0;left:0;width:100%;height:100%;cursor:pointer"
+          onchange="readFile(event)">
+      </label>
+      <!-- paste fallback for iOS 9 where file picker only opens camera/photos -->
+      <div style="margin:12px 0 6px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#888;">
+        ou cole o JSON abaixo
+      </div>
+      <textarea id="restore-ta" class="restore-ta"
+        placeholder="cole o conteúdo do snapshot aqui..."></textarea>
+      <div class="sheet-btns">
         <button class="sbtn primary" onclick="doRestore()">Restaurar agora</button>
+        <button class="sbtn ghost"   onclick="showMain()">Voltar</button>
       </div>
     </div>
   </div>
@@ -672,7 +690,7 @@ function doDelete() {
 }
 
 // ══════════════════════════════════════════════════════════
-// SNAPSHOT — save & restore
+// SNAPSHOT — download & restore
 // ══════════════════════════════════════════════════════════
 function buildSnapshot() {
   return JSON.stringify({
@@ -684,122 +702,136 @@ function buildSnapshot() {
   }, null, 2);
 }
 
+function snapFilename() {
+  var d = new Date();
+  return 'bloco_' +
+    d.getFullYear() + '-' +
+    (d.getMonth()+1 < 10 ? '0' : '') + (d.getMonth()+1) + '-' +
+    (d.getDate() < 10 ? '0' : '') + d.getDate() + '.json';
+}
+
 function openSnapshot() {
-  var sub = document.getElementById('snap-sub');
-  sub.textContent = notes.length + ' nota(s) · ' + new Date().toLocaleDateString('pt-BR');
-  document.getElementById('restore-area').className = 'restore-area';
+  document.getElementById('snap-sub').textContent =
+    notes.length + ' nota(s) · ' + new Date().toLocaleDateString('pt-BR');
+  showMain();
   document.getElementById('restore-ta').value = '';
   document.getElementById('snap-overlay').className = 'overlay on';
 }
 function closeSnapshot() {
   document.getElementById('snap-overlay').className = 'overlay';
 }
-
-function toggleRestoreArea() {
-  var ra = document.getElementById('restore-area');
-  ra.className = ra.className === 'restore-area' ? 'restore-area on' : 'restore-area';
+function showMain() {
+  document.getElementById('snap-main').style.display   = 'block';
+  document.getElementById('snap-upload').style.display = 'none';
+}
+function showUpload() {
+  document.getElementById('snap-main').style.display   = 'none';
+  document.getElementById('snap-upload').style.display = 'block';
 }
 
-function doSave() {
-  var json = buildSnapshot();
-  var d    = new Date();
-  var fname = 'bloco_' +
-    d.getFullYear() + '-' +
-    (d.getMonth()+1 < 10 ? '0' : '') + (d.getMonth()+1) + '-' +
-    (d.getDate()    < 10 ? '0' : '') + d.getDate() + '.json';
+// ── DOWNLOAD ─────────────────────────────────────────────
+function doDownload() {
+  var json  = buildSnapshot();
+  var fname = snapFilename();
 
-  // Modern browsers: Blob + <a download>
+  // 1. Try Blob + <a download> (Chrome, Firefox, Android, Edge)
+  if (window.Blob && (window.URL || window.webkitURL)) {
+    try {
+      var blob = new Blob([json], { type: 'application/json' });
+      var url  = (window.URL || window.webkitURL).createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href     = url;
+      a.download = fname;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      var _url = url;
+      setTimeout(function() {
+        document.body.removeChild(a);
+        (window.URL || window.webkitURL).revokeObjectURL(_url);
+      }, 800);
+      closeSnapshot();
+      toast('⬇ ' + fname);
+      return;
+    } catch(e) {}
+  }
+
+  // 2. iOS Safari fallback: data URI in new tab
+  //    User vê o JSON → toca Compartilhar → Salvar em Arquivos
   try {
-    var blob = new Blob([json], { type: 'application/json' });
-    var url  = (window.URL || window.webkitURL).createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = fname;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function(){ document.body.removeChild(a); (window.URL||window.webkitURL).revokeObjectURL(url); }, 500);
+    var dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+    window.open(dataUri, '_blank');
     closeSnapshot();
-    toast('Snapshot salvo: ' + fname);
-    return;
-  } catch(e) {}
-
-  // iOS fallback: open data URI in new tab (user can share/save from there)
-  try {
-    var uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-    window.open(uri, '_blank');
-    closeSnapshot();
-    toast('Aberto em nova aba — compartilhe para salvar');
-    return;
-  } catch(e2) {}
-
-  // Last resort: show in textarea to copy
-  document.getElementById('restore-area').className = 'restore-area on';
-  document.getElementById('restore-ta').value = json;
-  toast('Copie o conteúdo abaixo');
+    toast('Aberto no Safari — compartilhe para salvar');
+  } catch(e2) {
+    // 3. Last resort: paste area
+    showUpload();
+    document.getElementById('restore-ta').value = json;
+    toast('Copie o JSON abaixo');
+  }
 }
 
-function pickFile() {
-  document.getElementById('restore-file').click();
-}
-
+// ── UPLOAD / RESTORE ──────────────────────────────────────
 function readFile(ev) {
   var file = ev.target.files && ev.target.files[0];
   if (!file) return;
+
   if (typeof FileReader === 'undefined') {
-    toast('FileReader não suportado neste browser');
+    toast('FileReader não disponível — cole o JSON manualmente');
     return;
   }
+
   var fr = new FileReader();
   fr.onload = function(e) {
     document.getElementById('restore-ta').value = e.target.result;
-    document.getElementById('restore-area').className = 'restore-area on';
+    toast('Arquivo carregado — toque em Restaurar');
   };
+  fr.onerror = function() { toast('Erro ao ler o arquivo'); };
   fr.readAsText(file);
-  // reset so same file can be picked again
-  ev.target.value = '';
+  ev.target.value = ''; // allow picking same file again
 }
 
 function doRestore() {
   var raw = document.getElementById('restore-ta').value.trim();
-  if (!raw) { toast('Nenhum conteúdo para restaurar'); return; }
+  if (!raw) { toast('Nenhum conteúdo — escolha um arquivo ou cole o JSON'); return; }
 
+  var data, imported;
   try {
-    var data = JSON.parse(raw);
-    var imported;
-
-    if (Array.isArray(data)) {
-      imported = data; // plain array of notes
-    } else if (data.notes && Array.isArray(data.notes)) {
-      imported = data.notes; // snapshot format
-    } else {
-      toast('Formato inválido');
-      return;
-    }
-
-    // Validate each note has at least an id
-    var clean = [];
-    for (var i = 0; i < imported.length; i++) {
-      var n = imported[i];
-      if (n && typeof n === 'object') {
-        clean.push({
-          id:        n.id        || genId(),
-          title:     n.title     || '',
-          body:      n.body      || '',
-          createdAt: n.createdAt || Date.now(),
-          updatedAt: n.updatedAt || Date.now()
-        });
-      }
-    }
-
-    notes = clean;
-    if (persist()) {
-      closeSnapshot();
-      renderList();
-      toast(clean.length + ' nota(s) restaurada(s)');
-    }
+    data = JSON.parse(raw);
   } catch(e) {
     toast('JSON inválido — verifique o conteúdo');
+    return;
+  }
+
+  if (Array.isArray(data)) {
+    imported = data;
+  } else if (data && Array.isArray(data.notes)) {
+    imported = data.notes;
+  } else {
+    toast('Formato não reconhecido');
+    return;
+  }
+
+  var clean = [];
+  var now   = Date.now();
+  for (var i = 0; i < imported.length; i++) {
+    var n = imported[i];
+    if (n && typeof n === 'object') {
+      clean.push({
+        id:        n.id        || genId(),
+        title:     String(n.title || ''),
+        body:      String(n.body  || ''),
+        createdAt: n.createdAt || now,
+        updatedAt: n.updatedAt || now
+      });
+    }
+  }
+
+  notes = clean;
+  if (persist()) {
+    closeSnapshot();
+    renderList();
+    toast(clean.length + ' nota(s) restaurada(s)');
   }
 }
 
