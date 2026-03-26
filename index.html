@@ -313,6 +313,37 @@ body.standalone .header { padding-top: 40px; }
 }
 .editor-body::-webkit-input-placeholder { color: #ccc; }
 
+/* ── Versions ── */
+#ed-versions { padding: 8px 18px 28px; }
+.ver-label {
+  font-size: 10px;
+  color: #bbb;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 5px;
+  font-family: 'Courier New', Courier, monospace;
+}
+.ver-row {
+  display: -webkit-box; display: -webkit-flex; display: flex;
+  -webkit-box-align: center; -webkit-align-items: center; align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px solid #f2f2f2;
+}
+.ver-row:last-child { border-bottom: none; }
+.ver-hash {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: #8fb3ae;
+  -webkit-flex-shrink: 0; flex-shrink: 0;
+  letter-spacing: 0.04em;
+}
+.ver-dt {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 11px;
+  color: #aaa;
+}
+
 /* ── Toast ── */
 .toast {
   position: fixed;
@@ -448,6 +479,7 @@ body.standalone .header { padding-top: 40px; }
   <textarea class="editor-body" id="ed-body"
     placeholder="Escreva aqui..."
     autocorrect="on" autocapitalize="sentences"></textarea>
+  <div id="ed-versions"></div>
 </div>
 
 <!-- DELETE SHEET -->
@@ -556,6 +588,37 @@ function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 }
 
+// djb2 hash → 8-char hex (ES5)
+function hashContent(title, body) {
+  var s = title + '\n' + body;
+  var h = 5381;
+  for (var i = 0; i < s.length; i++) {
+    h = ((h << 5) + h) ^ s.charCodeAt(i);
+    h = h & h;
+  }
+  var hex = (h >>> 0).toString(16);
+  while (hex.length < 8) hex = '0' + hex;
+  return hex;
+}
+
+function fmtSavedAt(ts) {
+  var d = new Date(ts);
+  var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+  return pad(d.getDate()) + ' ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear() +
+         ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+
+function renderVersions(n) {
+  var el = document.getElementById('ed-versions');
+  if (!n || !n.versions || n.versions.length === 0) { el.innerHTML = ''; return; }
+  var html = '<div class="ver-label">versões</div>';
+  var vs = n.versions.slice().reverse();
+  for (var i = 0; i < vs.length; i++) {
+    html += '<div class="ver-row"><span class="ver-hash">' + vs[i].hash + '</span><span class="ver-dt">' + fmtSavedAt(vs[i].savedAt) + '</span></div>';
+  }
+  el.innerHTML = html;
+}
+
 // ══════════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════════
@@ -647,6 +710,7 @@ function openNote(id) {
   document.getElementById('ed-body').value   = n.body  || '';
   document.getElementById('btn-del').className = 'ebtn del on';
   dotOff();
+  renderVersions(n);
   showEditor();
 }
 
@@ -656,6 +720,7 @@ function newNote() {
   document.getElementById('ed-body').value   = '';
   document.getElementById('btn-del').className = 'ebtn del';
   dotOff();
+  document.getElementById('ed-versions').innerHTML = '';
   showEditor();
   if (!physKb) {
     setTimeout(function(){ document.getElementById('ed-title').focus(); }, 250);
@@ -681,15 +746,28 @@ function saveNote() {
   if (!title && !body.trim()) { toast('Nota vazia'); return; }
 
   var now = Date.now();
+  var hash = hashContent(title, body);
   if (curId) {
     var n = findNote(curId);
-    if (n) { n.title = title; n.body = body; n.updatedAt = now; }
-    else   { notes.push({ id: curId, title: title, body: body, createdAt: now, updatedAt: now }); }
+    if (n) {
+      n.title = title; n.body = body; n.updatedAt = now;
+      var vs = n.versions || [];
+      if (!vs.length || vs[vs.length-1].hash !== hash) {
+        vs.push({ hash: hash, savedAt: now });
+      }
+      n.versions = vs;
+      renderVersions(n);
+    } else {
+      var newN = { id: curId, title: title, body: body, createdAt: now, updatedAt: now, versions: [{ hash: hash, savedAt: now }] };
+      notes.push(newN);
+      renderVersions(newN);
+    }
   } else {
-    var nn = { id: genId(), title: title, body: body, createdAt: now, updatedAt: now };
+    var nn = { id: genId(), title: title, body: body, createdAt: now, updatedAt: now, versions: [{ hash: hash, savedAt: now }] };
     notes.push(nn);
     curId = nn.id;
     document.getElementById('btn-del').className = 'ebtn del on';
+    renderVersions(nn);
   }
   if (persist()) dotOn();
 }
