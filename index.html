@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="bloco">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<title>bloco</title>
+<style>
+/* ── Reset ── */
+*, *:before, *:after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Tokens ── */
+:root {
+  --bg:      #b2c9c3;
+  --surface: #f0ece4;
+  --text:    #0d0d0d;
+  --muted:   #555;
+  --border:  rgba(0,0,0,0.10);
+  --accent:  #0d0d0d;
+  --danger:  #c0392b;
+}
+
+/* ── Base ── */
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── Header ── */
+.header {
+  background: var(--bg);
+  padding: 20px 20px 12px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: flex-end;
+  align-items: flex-end;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+.header-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  line-height: 1;
+}
+.header-count {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-bottom: 3px;
+}
+
+/* ── Note List ── */
+.list {
+  padding: 0 16px 120px;
+}
+.note-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  -webkit-transition: -webkit-transform 0.15s, box-shadow 0.15s;
+  transition: transform 0.15s, box-shadow 0.15s;
+  position: relative;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.note-card:active {
+  -webkit-transform: scale(0.98);
+  transform: scale(0.98);
+}
+.note-card-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note-card-preview {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+.note-card-date {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #999;
+  margin-top: 8px;
+}
+
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 80px 32px;
+}
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+.empty-text {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── FAB (new note button) ── */
+.fab {
+  position: fixed;
+  bottom: 28px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 26px;
+  line-height: 56px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  z-index: 50;
+  -webkit-transition: -webkit-transform 0.15s;
+  transition: transform 0.15s;
+}
+.fab:active {
+  -webkit-transform: scale(0.92);
+  transform: scale(0.92);
+}
+
+/* ── Editor screen ── */
+.editor-screen {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  z-index: 100;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+.editor-screen.open {
+  display: -webkit-flex;
+  display: flex;
+}
+.editor-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 16px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+}
+.btn-back {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+}
+.btn-back:active { opacity: 0.6; }
+
+.editor-bar-right {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+}
+.editor-bar-right > * + * { margin-left: 8px; }
+
+.btn-delete {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--danger);
+  background: none;
+  border: 1px solid rgba(192,57,43,0.3);
+  border-radius: 8px;
+  padding: 7px 14px;
+  cursor: pointer;
+  display: none;
+}
+.btn-delete.visible { display: block; }
+.btn-delete:active { opacity: 0.6; }
+
+.btn-save {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+.btn-save:active { opacity: 0.7; }
+
+.editor-title-input {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 16px 20px 8px;
+  width: 100%;
+  -webkit-flex-shrink: 0;
+  flex-shrink: 0;
+  letter-spacing: -0.3px;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+.editor-title-input::-webkit-input-placeholder { color: #bbb; font-weight: 400; }
+
+.editor-body-input {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 15px;
+  color: var(--text);
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 8px 20px 40px;
+  width: 100%;
+  -webkit-flex: 1;
+  flex: 1;
+  resize: none;
+  line-height: 1.7;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+  -webkit-appearance: none;
+  border-radius: 0;
+}
+.editor-body-input::-webkit-input-placeholder { color: #bbb; }
+
+/* ── Saved indicator ── */
+.saved-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6ab04c;
+  display: inline-block;
+  opacity: 0;
+  margin-left: 8px;
+  -webkit-transition: opacity 0.3s;
+  transition: opacity 0.3s;
+}
+.saved-dot.show { opacity: 1; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  -webkit-transform: translateX(-50%) translateY(20px);
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border-radius: 40px;
+  opacity: 0;
+  z-index: 999;
+  pointer-events: none;
+  -webkit-transition: opacity 0.2s, -webkit-transform 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.toast.show {
+  opacity: 1;
+  -webkit-transform: translateX(-50%) translateY(0);
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Delete confirm ── */
+.confirm-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 200;
+  -webkit-align-items: flex-end;
+  align-items: flex-end;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+.confirm-overlay.open {
+  display: -webkit-flex;
+  display: flex;
+}
+.confirm-sheet {
+  background: var(--surface);
+  border-radius: 16px 16px 0 0;
+  padding: 24px 24px 40px;
+  width: 100%;
+}
+.confirm-title {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.confirm-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  margin-bottom: 24px;
+}
+.confirm-btns {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+}
+.confirm-btns > * + * { margin-top: 10px; }
+.confirm-btn-del {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.confirm-btn-cancel {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  color: var(--text);
+}
+</style>
+</head>
+<body>
+
+<!-- LIST SCREEN -->
+<div id="list-screen">
+  <div class="header">
+    <div class="header-title">bloco</div>
+    <div class="header-count" id="note-count">0 notas</div>
+  </div>
+  <div class="list" id="note-list"></div>
+  <button class="fab" id="btn-new" onclick="newNote()">+</button>
+</div>
+
+<!-- EDITOR SCREEN -->
+<div class="editor-screen" id="editor-screen">
+  <div class="editor-bar">
+    <button class="btn-back" onclick="closeEditor()">← voltar</button>
+    <div class="editor-bar-right">
+      <span class="saved-dot" id="saved-dot"></span>
+      <button class="btn-delete" id="btn-delete" onclick="confirmDelete()">apagar</button>
+      <button class="btn-save" onclick="saveNote()">salvar</button>
+    </div>
+  </div>
+  <input
+    class="editor-title-input"
+    id="editor-title"
+    type="text"
+    placeholder="Título"
+    autocomplete="off"
+    autocorrect="on"
+    autocapitalize="sentences"
+  >
+  <textarea
+    class="editor-body-input"
+    id="editor-body"
+    placeholder="Escreva aqui..."
+    autocorrect="on"
+    autocapitalize="sentences"
+  ></textarea>
+</div>
+
+<!-- DELETE CONFIRM -->
+<div class="confirm-overlay" id="confirm-overlay" onclick="cancelDelete()">
+  <div class="confirm-sheet" onclick="stopProp(event)">
+    <div class="confirm-title">Apagar nota?</div>
+    <div class="confirm-sub">Esta ação não pode ser desfeita.</div>
+    <div class="confirm-btns">
+      <button class="confirm-btn-del" onclick="doDelete()">Apagar</button>
+      <button class="confirm-btn-cancel" onclick="cancelDelete()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Storage ──────────────────────────────────────────────
+var STORE_KEY = 'bloco_v1';
+
+function loadNotes() {
+  try {
+    var raw = localStorage.getItem(STORE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveNotes(notes) {
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(notes));
+  } catch(e) {
+    showToast('Erro ao salvar');
+  }
+}
+
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+// ── State ─────────────────────────────────────────────────
+var notes = loadNotes();
+var currentId = null;
+var autoSaveTimer = null;
+
+// ── List ──────────────────────────────────────────────────
+function renderList() {
+  var listEl = document.getElementById('note-list');
+  var countEl = document.getElementById('note-count');
+
+  // Sort by updatedAt desc
+  var sorted = notes.slice().sort(function(a, b) {
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+
+  countEl.textContent = notes.length + (notes.length === 1 ? ' nota' : ' notas');
+
+  if (sorted.length === 0) {
+    listEl.innerHTML =
+      '<div class="empty">' +
+        '<div class="empty-icon">✏</div>' +
+        '<div class="empty-text">Nenhuma nota ainda</div>' +
+      '</div>';
+    return;
+  }
+
+  listEl.innerHTML = '';
+  for (var i = 0; i < sorted.length; i++) {
+    var n = sorted[i];
+    var card = document.createElement('div');
+    card.className = 'note-card';
+    card.setAttribute('data-id', n.id);
+
+    var title = n.title || 'Sem título';
+    var preview = (n.body || '').replace(/\n/g, ' ').trim();
+    if (!preview) preview = 'Nota vazia';
+    if (preview.length > 60) preview = preview.slice(0, 60) + '…';
+
+    var d = new Date(n.updatedAt || n.createdAt);
+    var months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    var dateStr = d.getDate() + ' ' + months[d.getMonth()] + ' · ' +
+      (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' +
+      (d.getMinutes() < 10 ? '0' : '') + d.getMinutes();
+
+    card.innerHTML =
+      '<div class="note-card-title">' + escHtml(title) + '</div>' +
+      '<div class="note-card-preview">' + escHtml(preview) + '</div>' +
+      '<div class="note-card-date">' + dateStr + '</div>';
+
+    card.addEventListener('click', function() {
+      openNote(this.getAttribute('data-id'));
+    });
+
+    listEl.appendChild(card);
+  }
+}
+
+// ── Editor ────────────────────────────────────────────────
+function openNote(id) {
+  var note = null;
+  for (var i = 0; i < notes.length; i++) {
+    if (notes[i].id === id) { note = notes[i]; break; }
+  }
+  if (!note) return;
+
+  currentId = id;
+  document.getElementById('editor-title').value = note.title || '';
+  document.getElementById('editor-body').value = note.body || '';
+  document.getElementById('btn-delete').className = 'btn-delete visible';
+  hideSavedDot();
+  showEditor();
+}
+
+function newNote() {
+  currentId = null;
+  document.getElementById('editor-title').value = '';
+  document.getElementById('editor-body').value = '';
+  document.getElementById('btn-delete').className = 'btn-delete';
+  hideSavedDot();
+  showEditor();
+  setTimeout(function() {
+    document.getElementById('editor-title').focus();
+  }, 300);
+}
+
+function showEditor() {
+  document.getElementById('editor-screen').className = 'editor-screen open';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeEditor() {
+  autoSave();
+  document.getElementById('editor-screen').className = 'editor-screen';
+  document.body.style.overflow = '';
+  currentId = null;
+  renderList();
+}
+
+function saveNote() {
+  var title = document.getElementById('editor-title').value.trim();
+  var body = document.getElementById('editor-body').value;
+
+  if (!title && !body.trim()) {
+    showToast('Nota vazia — nada salvo');
+    return;
+  }
+
+  var now = Date.now();
+
+  if (currentId) {
+    for (var i = 0; i < notes.length; i++) {
+      if (notes[i].id === currentId) {
+        notes[i].title = title;
+        notes[i].body = body;
+        notes[i].updatedAt = now;
+        break;
+      }
+    }
+  } else {
+    var note = { id: genId(), title: title, body: body, createdAt: now, updatedAt: now };
+    notes.push(note);
+    currentId = note.id;
+    document.getElementById('btn-delete').className = 'btn-delete visible';
+  }
+
+  saveNotes(notes);
+  showSavedDot();
+}
+
+function autoSave() {
+  var title = document.getElementById('editor-title').value.trim();
+  var body = document.getElementById('editor-body').value;
+  if (title || body.trim()) saveNote();
+}
+
+// ── Delete ────────────────────────────────────────────────
+function confirmDelete() {
+  document.getElementById('confirm-overlay').className = 'confirm-overlay open';
+}
+
+function cancelDelete() {
+  document.getElementById('confirm-overlay').className = 'confirm-overlay';
+}
+
+function doDelete() {
+  cancelDelete();
+  if (!currentId) return;
+  for (var i = 0; i < notes.length; i++) {
+    if (notes[i].id === currentId) {
+      notes.splice(i, 1);
+      break;
+    }
+  }
+  saveNotes(notes);
+  document.getElementById('editor-screen').className = 'editor-screen';
+  document.body.style.overflow = '';
+  currentId = null;
+  renderList();
+  showToast('Nota apagada');
+}
+
+function stopProp(e) {
+  e.stopPropagation();
+}
+
+// ── Helpers ───────────────────────────────────────────────
+function showSavedDot() {
+  var dot = document.getElementById('saved-dot');
+  dot.className = 'saved-dot show';
+  clearTimeout(dot._timer);
+  dot._timer = setTimeout(function() {
+    dot.className = 'saved-dot';
+  }, 2000);
+}
+
+function hideSavedDot() {
+  document.getElementById('saved-dot').className = 'saved-dot';
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function() { t.className = 'toast'; }, 2200);
+}
+
+function escHtml(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Auto-save on input ────────────────────────────────────
+document.getElementById('editor-title').addEventListener('input', function() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSave, 1500);
+});
+
+document.getElementById('editor-body').addEventListener('input', function() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(autoSave, 1500);
+});
+
+// ── iOS back gesture / keyboard ───────────────────────────
+document.addEventListener('keydown', function(e) {
+  if (e.keyCode === 27) closeEditor();
+});
+
+// ── Init ──────────────────────────────────────────────────
+renderList();
+</script>
+</body>
+</html>

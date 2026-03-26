@@ -1,0 +1,17 @@
+{
+  "name": "bloco",
+  "short_name": "bloco",
+  "description": "Bloco de notas",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#b2c9c3",
+  "theme_color": "#b2c9c3",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
